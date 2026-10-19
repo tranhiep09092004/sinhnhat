@@ -490,6 +490,9 @@ mỗi ngày đều tràn ngập tiếng cười và yêu thương. ✨`;
     const inp = words(input), full = words(fullName);
     return inp.includes(full[full.length - 1]);
   }
+  // Tên khớp người đặc biệt nhưng sai ngày sinh → không cho mở quà
+  const lockedFor = (name, d, m, y) =>
+    SPECIAL.some(s => matchName(name, s.fullName) && !(s.d === d && s.m === m && s.y === y));
   let special = null;
 
   function start(name, d, m, y, withMusic) {
@@ -520,6 +523,7 @@ mỗi ngày đều tràn ngập tiếng cười và yêu thương. ✨`;
       const dt = new Date(y, m - 1, d);
       if (dt.getMonth() !== m - 1) msg = `Tháng ${m} không có ngày ${d} đâu nha`;
       else if (dt > new Date()) msg = 'Ngày sinh không thể ở tương lai';
+      else if (lockedFor(name, d, m, y)) msg = 'Ngày sinh chưa đúng rồi, thử lại nhé 🎂';
     }
     err.textContent = msg;
     if (msg) {
@@ -532,7 +536,8 @@ mỗi ngày đều tràn ngập tiếng cười và yêu thương. ✨`;
 
   // Link chia sẻ sẵn: ?ten=Minh%20Anh&ns=2000-10-17 → bỏ qua trang nhập
   const ns = (params.get('ns') || '').match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if (params.get('ten') && ns) start(params.get('ten'), +ns[3], +ns[2], +ns[1], false);
+  if (params.get('ten') && ns && !lockedFor(params.get('ten'), +ns[3], +ns[2], +ns[1]))
+    start(params.get('ten'), +ns[3], +ns[2], +ns[1], false);
 
   /* ---------- Canvas helpers ---------- */
   const DPR = Math.min(devicePixelRatio || 1, 2);
